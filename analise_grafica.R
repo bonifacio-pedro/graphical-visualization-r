@@ -2,6 +2,8 @@
 
 if(!require(ggplot2)) install.packages("ggplot2")
 if(!require(plotly)) install.packages("plotly")
+if(!require(forcats)) intall.packages("forcats")
+library(forcats)
 library(dplyr)
 library(ggplot2)
 library(plotly)
@@ -51,9 +53,21 @@ for (i in 1:6) {
 }
 
 # Contagem
+srag_sp$raca <- fct_infreq(srag_sp$raca) # Ordena pela frequência
+srag_sp$raca <- fct_rev(srag_sp$raca)   # Reverte a ordem para decresce
+
+# Calcular a média das contagens por raça
+mean_value <- mean(as.numeric(table(srag_sp$raca)))
+
+# Criar o gráfico
 ggplot(srag_sp, aes(x = raca)) +
-  geom_bar(fill = 'gray') +
-  labs(title = "Quantidade por raça", x="Raça", y="Contagem")
+  geom_bar(fill = 'gray', width = 0.6) +
+  coord_flip() + 
+  geom_hline(yintercept = mean_value, color = "gray", linetype = "dashed") +
+  annotate("text", x = length(levels(srag_sp$raca)) + 0.5, y = mean_value *1.05, 
+           label = "Média de quantia", color = "gray", hjust = 0, size = 2.5) +
+  labs(title = "Quantidade por raça", x = "Raça", y = "Contagem") +
+  theme_minimal()
 
 # Gráfico por sexo, raça e região
 # Limpando dados de regiao
@@ -98,3 +112,14 @@ boxplot(srag_sp$idade, ylab="Idade com outliers")
 boxplot(srag_sp_idades$idade, ylab="Idade sem outliers")
 barplot(grafico_barras, col="blue")
 barplot(table(srag_sp$raca), col="red")
+
+### Histograma, estatística descritiva e normalidade
+hist(srag_sp$idade, probality=T, col="lightblue")
+lines(density(srag_sp$idade), col="blue")
+
+qqnorm(srag_sp_idades$idade, col="lightblue")
+qqline(srag_sp_idades$idade, col="blue")
+
+# Com ggplot
+ggplot(data=srag_sp, aes(x=idade)) +
+  geom_histogram(fill = 'lightblue', bins=25)
